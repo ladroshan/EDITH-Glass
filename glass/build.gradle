@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+repositories {
+    jcenter()
+    flatDir {
+        dirs 'prebuilt-libs'
+    }
+}
+
+def versionMajor = 0
+def versionMinor = 0
+def versionPatch = 3000
+def versionBuildComments = "Initial build"
+
+android {
+    compileSdkVersion "Google Inc.:Glass Development Kit Preview:19"
+    buildToolsVersion "28.0.1"
+    defaultConfig {
+        applicationId "com.starkindustries.edith"
+        minSdkVersion 19
+        targetSdkVersion 27
+
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+
+        setProperty("archivesBaseName", applicationId + "-v" + versionName)
+    }
+
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+        jumboMode true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        dev {
+            versionNameSuffix ".dev"
+        }
+
+        debug {
+            versionNameSuffix ".debug"
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.squareup.retrofit2:retrofit:2.4.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.4.0'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+}
